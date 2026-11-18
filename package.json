@@ -1,0 +1,12 @@
+{
+    "name": "tractorseva",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "mobile": "pnpm --filter @tractorseva/mobile start",
+        "android": "pnpm --filter @tractorseva/mobile android",
+        "typecheck": "pnpm --filter @tractorseva/mobile typecheck",
+        "test": "pnpm --filter @tractorseva/mobile test"
+    },
+    "packageManager": "pnpm@10.0.0"
+}
