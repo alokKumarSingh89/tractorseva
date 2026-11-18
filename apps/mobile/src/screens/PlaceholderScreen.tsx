@@ -1,9 +1,10 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ArrowLeft, Construction } from "lucide-react-native";
 
-import { ArrowLeft } from "lucide-react-native";
 import { colors } from "../theme/colors";
-import { spacing } from "../theme/spacing";
+import { fonts } from "../theme/fonts";
+import { radius, spacing } from "../theme/spacing";
 
 type Props = {
   title: string;
@@ -19,13 +20,21 @@ export function PlaceholderScreen({ title, onBack }: Props) {
         accessibilityLabel="वापस जाएं"
         style={styles.back}
       >
-        <ArrowLeft size={26} color={colors.primaryDark} />
+        <ArrowLeft size={24} color={colors.text} />
         <Text style={styles.backText}>वापस</Text>
       </Pressable>
 
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.center}>
+        <View style={styles.icon}>
+          <Construction size={36} color={colors.primary} />
+        </View>
 
-      <Text style={styles.description}>यह सुविधा अगले चरण में बनाई जाएगी।</Text>
+        <Text style={styles.title}>{title}</Text>
+
+        <Text style={styles.description}>
+          यह सुविधा अगले चरण में उपलब्ध होगी।
+        </Text>
+      </View>
     </View>
   );
 }
@@ -33,28 +42,48 @@ export function PlaceholderScreen({ title, onBack }: Props) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    padding: spacing.xl,
     backgroundColor: colors.background,
+    padding: spacing.lg,
   },
   back: {
+    minHeight: 52,
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 56,
     gap: spacing.sm,
   },
   backText: {
-    fontSize: 17,
-    color: colors.primaryDark,
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    color: colors.text,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: spacing.xxxl,
+  },
+  icon: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryContainer,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 26,
-    fontWeight: "800",
+    fontFamily: fonts.semibold,
+    fontSize: 22,
+    lineHeight: 36,
     color: colors.text,
-    marginTop: spacing.xl,
+    textAlign: "center",
   },
   description: {
-    fontSize: 16,
+    fontFamily: fonts.regular,
+    fontSize: 14,
+    lineHeight: 25,
     color: colors.textSecondary,
-    marginTop: spacing.md,
+    textAlign: "center",
+    marginTop: spacing.sm,
   },
 });

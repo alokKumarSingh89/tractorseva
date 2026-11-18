@@ -1,14 +1,24 @@
 import React, { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { ArrowLeft, UserRound } from "lucide-react-native";
 
 import { AppButton } from "../../components/AppButton";
 import { FormField } from "../../components/FormField";
 import { colors } from "../../theme/colors";
-import { spacing } from "../../theme/spacing";
+import { fonts } from "../../theme/fonts";
+import { radius, spacing } from "../../theme/spacing";
 
 import { Farmer, createFarmer, updateFarmer } from "./farmer.repository";
-
-import { FarmerInput, validateFarmer } from "./farmer.validation";
+import { FarmerErrors, FarmerInput, validateFarmer } from "./farmer.validation";
 
 type Props = {
   farmer?: Farmer;
@@ -19,20 +29,12 @@ type Props = {
 export function FarmerFormScreen({ farmer, onSaved, onBack }: Props) {
   const [form, setForm] = useState<FarmerInput>({
     name: farmer?.name ?? "",
-    mobile: farmer?.mobile ?? "",
     village: farmer?.village ?? "",
+    mobile: farmer?.mobile ?? "",
     notes: farmer?.notes ?? "",
   });
 
-  const [errors, setErrors] = useState(
-    validateFarmer({
-      name: "ok",
-      mobile: "",
-      village: "ok",
-      notes: "",
-    }),
-  );
-
+  const [errors, setErrors] = useState<FarmerErrors>({});
   const [saving, setSaving] = useState(false);
 
   function change(field: keyof FarmerInput, value: string) {
@@ -66,7 +68,7 @@ export function FarmerFormScreen({ farmer, onSaved, onBack }: Props) {
         await createFarmer(form);
       }
 
-      Alert.alert("सफल", "किसान की जानकारी सेव हो गई", [
+      Alert.alert("जानकारी सेव हो गई", "किसान की जानकारी सुरक्षित हो गई है।", [
         { text: "ठीक है", onPress: onSaved },
       ]);
     } catch {
@@ -77,59 +79,86 @@ export function FarmerFormScreen({ farmer, onSaved, onBack }: Props) {
   }
 
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       style={styles.screen}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Text style={styles.back} onPress={onBack} accessibilityRole="button">
-        ← वापस
-      </Text>
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="वापस जाएं"
+          onPress={onBack}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color={colors.text} />
+        </Pressable>
 
-      <Text style={styles.title}>
-        {farmer ? "किसान की जानकारी बदलें" : "नया किसान जोड़ें"}
-      </Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {farmer ? "किसान की जानकारी बदलें" : "नया किसान जोड़ें"}
+        </Text>
+      </View>
 
-      <FormField
-        label="किसान का नाम *"
-        value={form.name}
-        onChangeText={(v) => change("name", v)}
-        placeholder="जैसे: रामलाल यादव"
-        error={errors.name}
-      />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.intro}>
+          <View style={styles.introIcon}>
+            <UserRound size={28} color={colors.primary} />
+          </View>
 
-      <FormField
-        label="गाँव का नाम *"
-        value={form.village}
-        onChangeText={(v) => change("village", v)}
-        placeholder="जैसे: सैदपुर"
-        error={errors.village}
-      />
+          <Text style={styles.introTitle}>किसान की जानकारी</Text>
 
-      <FormField
-        label="मोबाइल नंबर"
-        value={form.mobile}
-        onChangeText={(v) => change("mobile", v)}
-        placeholder="10 अंकों का नंबर"
-        keyboardType="phone-pad"
-        error={errors.mobile}
-      />
+          <Text style={styles.introDescription}>
+            काम और भुगतान का हिसाब रखने के लिए किसान की जानकारी भरें।
+          </Text>
+        </View>
 
-      <FormField
-        label="अतिरिक्त जानकारी"
-        value={form.notes}
-        onChangeText={(v) => change("notes", v)}
-        placeholder="कोई जरूरी जानकारी"
-        multiline
-      />
+        <FormField
+          label="किसान का नाम *"
+          value={form.name}
+          onChangeText={(value) => change("name", value)}
+          placeholder="जैसे: रामलाल यादव"
+          error={errors.name}
+        />
 
-      <View style={styles.action}>
+        <FormField
+          label="गाँव का नाम *"
+          value={form.village}
+          onChangeText={(value) => change("village", value)}
+          placeholder="जैसे: सैदपुर"
+          error={errors.village}
+        />
+
+        <FormField
+          label="मोबाइल नंबर (वैकल्पिक)"
+          value={form.mobile}
+          onChangeText={(value) => change("mobile", value)}
+          placeholder="10 अंकों का नंबर"
+          keyboardType="phone-pad"
+          error={errors.mobile}
+        />
+
+        <FormField
+          label="अतिरिक्त जानकारी"
+          value={form.notes}
+          onChangeText={(value) => change("notes", value)}
+          placeholder="पहचान या कोई जरूरी जानकारी"
+          multiline
+        />
+      </ScrollView>
+
+      <View style={styles.footer}>
         <AppButton
           title={saving ? "सेव हो रहा है..." : "किसान सेव करें"}
+          icon="check"
+          disabled={saving}
           onPress={save}
         />
       </View>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -138,23 +167,66 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
+  header: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
-  back: {
-    fontSize: 17,
-    color: colors.primary,
-    marginBottom: spacing.xl,
-    paddingVertical: spacing.md,
+  backButton: {
+    width: 48,
+    height: 48,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "800",
+  headerTitle: {
+    flex: 1,
+    fontFamily: fonts.semibold,
+    fontSize: 20,
+    lineHeight: 32,
     color: colors.text,
-    marginBottom: spacing.xl,
   },
-  action: {
-    marginTop: spacing.md,
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
+  intro: {
+    alignItems: "center",
+    paddingVertical: spacing.xl,
+    marginBottom: spacing.lg,
+  },
+  introIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryContainer,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+  },
+  introTitle: {
+    fontFamily: fonts.semibold,
+    fontSize: 21,
+    lineHeight: 34,
+    color: colors.text,
+    textAlign: "center",
+  },
+  introDescription: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 24,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.xs,
+  },
+  footer: {
+    padding: spacing.lg,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
 });

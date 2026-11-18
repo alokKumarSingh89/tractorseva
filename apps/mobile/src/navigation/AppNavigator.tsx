@@ -4,7 +4,7 @@ import { BackHandler, Platform } from "react-native";
 import { DashboardScreen } from "../features/dashboard/DashboardScreen";
 import { FarmerFormScreen } from "../features/farmers/FarmerFormScreen";
 import { FarmerListScreen } from "../features/farmers/FarmerListScreen";
-import { Farmer } from "../features/farmers/farmer.repository";
+import type { Farmer } from "../features/farmers/farmer.repository";
 import { PlaceholderScreen } from "../screens/PlaceholderScreen";
 
 type Screen =
@@ -25,15 +25,6 @@ export function AppNavigator() {
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedFarmer, setSelectedFarmer] = useState<Farmer | undefined>();
 
-  function goBack() {
-    if (screen === "farmer-form") {
-      setSelectedFarmer(undefined);
-      setScreen("farmers");
-    } else if (screen !== "home") {
-      setScreen("home");
-    }
-  }
-
   useEffect(() => {
     if (Platform.OS !== "android") return;
 
@@ -41,7 +32,14 @@ export function AppNavigator() {
       "hardwareBackPress",
       () => {
         if (screen === "home") return false;
-        goBack();
+
+        if (screen === "farmer-form") {
+          setSelectedFarmer(undefined);
+          setScreen("farmers");
+        } else {
+          setScreen("home");
+        }
+
         return true;
       },
     );
@@ -52,6 +50,15 @@ export function AppNavigator() {
   function openFarmerForm(farmer?: Farmer) {
     setSelectedFarmer(farmer);
     setScreen("farmer-form");
+  }
+
+  function goBack() {
+    if (screen === "farmer-form") {
+      setSelectedFarmer(undefined);
+      setScreen("farmers");
+    } else {
+      setScreen("home");
+    }
   }
 
   if (screen === "farmer-form") {

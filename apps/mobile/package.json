@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@expo-google-fonts/noto-sans-devanagari": "^0.4.2",
     "expo": "~58.0.25",
     "expo-crypto": "~58.0.8",
+    "expo-font": "~58.0.12",
     "expo-linear-gradient": "~58.0.4",
     "expo-sqlite": "~58.0.18",
     "expo-status-bar": "~58.0.5",
