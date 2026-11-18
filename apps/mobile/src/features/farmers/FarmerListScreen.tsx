@@ -9,7 +9,14 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Plus, Search, UserRound, ChevronRight } from "lucide-react-native";
+
+import {
+  Plus,
+  Search,
+  UserRound,
+  ChevronRight,
+  House,
+} from "lucide-react-native";
 
 import { colors } from "../../theme/colors";
 import { radius, spacing } from "../../theme/spacing";
@@ -18,9 +25,10 @@ import { Farmer, listFarmers } from "./farmer.repository";
 type Props = {
   onAdd: () => void;
   onEdit: (farmer: Farmer) => void;
+  onHome: () => void;
 };
 
-export function FarmerListScreen({ onAdd, onEdit }: Props) {
+export function FarmerListScreen({ onAdd, onEdit, onHome }: Props) {
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -43,7 +51,19 @@ export function FarmerListScreen({ onAdd, onEdit }: Props) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>मेरे किसान</Text>
+      <View style={styles.header}>
+        <Pressable
+          onPress={onHome}
+          accessibilityRole="button"
+          accessibilityLabel="होम पर जाएं"
+          style={styles.homeButton}
+        >
+          <House size={24} color={colors.primary} />
+          <Text style={styles.homeText}>होम</Text>
+        </Pressable>
+
+        <Text style={styles.title}>मेरे किसान</Text>
+      </View>
 
       <View style={styles.searchBox}>
         <Search size={22} color={colors.textSecondary} />
@@ -111,6 +131,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     padding: spacing.lg,
+  },
+  header: {
+    marginBottom: spacing.lg,
+  },
+  homeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    minHeight: 52,
+    alignSelf: "flex-start",
+  },
+  homeText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.primary,
   },
   title: {
     fontSize: 26,

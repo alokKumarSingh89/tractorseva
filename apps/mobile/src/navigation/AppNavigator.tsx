@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { BackHandler, Platform } from "react-native";
 
 import { DashboardScreen } from "../features/dashboard/DashboardScreen";
 import { FarmerFormScreen } from "../features/farmers/FarmerFormScreen";
@@ -24,6 +25,30 @@ export function AppNavigator() {
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedFarmer, setSelectedFarmer] = useState<Farmer | undefined>();
 
+  function goBack() {
+    if (screen === "farmer-form") {
+      setSelectedFarmer(undefined);
+      setScreen("farmers");
+    } else if (screen !== "home") {
+      setScreen("home");
+    }
+  }
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (screen === "home") return false;
+        goBack();
+        return true;
+      },
+    );
+
+    return () => subscription.remove();
+  }, [screen]);
+
   function openFarmerForm(farmer?: Farmer) {
     setSelectedFarmer(farmer);
     setScreen("farmer-form");
@@ -37,7 +62,7 @@ export function AppNavigator() {
           setSelectedFarmer(undefined);
           setScreen("farmers");
         }}
-        onBack={() => setScreen("farmers")}
+        onBack={goBack}
       />
     );
   }
@@ -47,17 +72,13 @@ export function AppNavigator() {
       <FarmerListScreen
         onAdd={() => openFarmerForm()}
         onEdit={openFarmerForm}
+        onHome={() => setScreen("home")}
       />
     );
   }
 
   if (screen === "voice" || screen === "manual" || screen === "ledger") {
-    return (
-      <PlaceholderScreen
-        title={titles[screen]}
-        onBack={() => setScreen("home")}
-      />
-    );
+    return <PlaceholderScreen title={titles[screen]} onBack={goBack} />;
   }
 
   return (
