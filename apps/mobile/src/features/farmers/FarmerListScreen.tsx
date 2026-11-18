@@ -9,16 +9,17 @@ import {
   TextInput,
   View,
 } from "react-native";
-
 import {
+  ArrowLeft,
+  ChevronRight,
   Plus,
   Search,
   UserRound,
-  ChevronRight,
-  House,
+  UsersRound,
 } from "lucide-react-native";
 
 import { colors } from "../../theme/colors";
+import { fonts } from "../../theme/fonts";
 import { radius, spacing } from "../../theme/spacing";
 import { Farmer, listFarmers } from "./farmer.repository";
 
@@ -37,7 +38,8 @@ export function FarmerListScreen({ onAdd, onEdit, onHome }: Props) {
     setLoading(true);
 
     try {
-      setFarmers(await listFarmers(search));
+      const result = await listFarmers(search);
+      setFarmers(result);
     } catch {
       Alert.alert("समस्या", "किसान की सूची नहीं खुल सकी");
     } finally {
@@ -56,70 +58,99 @@ export function FarmerListScreen({ onAdd, onEdit, onHome }: Props) {
           onPress={onHome}
           accessibilityRole="button"
           accessibilityLabel="होम पर जाएं"
-          style={styles.homeButton}
+          style={styles.backButton}
         >
-          <House size={24} color={colors.primary} />
-          <Text style={styles.homeText}>होम</Text>
+          <ArrowLeft size={24} color={colors.text} />
         </Pressable>
 
-        <Text style={styles.title}>मेरे किसान</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          मेरे किसान
+        </Text>
+      </View>
+
+      <View style={styles.summary}>
+        <View style={styles.summaryIcon}>
+          <UsersRound size={25} color={colors.primary} />
+        </View>
+
+        <View>
+          <Text style={styles.summaryLabel}>
+            {search ? "खोज में मिले किसान" : "कुल किसान"}
+          </Text>
+          <Text style={styles.summaryValue}>{farmers.length}</Text>
+        </View>
       </View>
 
       <View style={styles.searchBox}>
-        <Search size={22} color={colors.textSecondary} />
+        <Search size={21} color={colors.textSecondary} />
         <TextInput
           style={styles.searchInput}
           value={search}
           onChangeText={setSearch}
           placeholder="नाम, मोबाइल या गाँव खोजें"
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="किसान खोजें"
         />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       ) : (
         <FlatList
           data={farmers}
           keyExtractor={(item) => item.id}
           keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <Text style={styles.empty}>
-              कोई किसान नहीं मिला। नया किसान जोड़ें।
-            </Text>
+            <View style={styles.empty}>
+              <UsersRound size={38} color={colors.textMuted} />
+              <Text style={styles.emptyTitle}>कोई किसान नहीं मिला</Text>
+              <Text style={styles.emptyDescription}>
+                {search
+                  ? "दूसरे नाम या गाँव से खोजें"
+                  : "शुरू करने के लिए नया किसान जोड़ें"}
+              </Text>
+            </View>
           }
           renderItem={({ item }) => (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`${item.name} की जानकारी बदलें`}
+              accessibilityLabel={`${item.name} की जानकारी देखें`}
               onPress={() => onEdit(item)}
-              style={styles.card}
+              style={({ pressed }) => [styles.card, pressed && styles.pressed]}
             >
               <View style={styles.avatar}>
-                <UserRound size={25} color={colors.primary} />
+                <UserRound size={22} color={colors.primary} />
               </View>
 
               <View style={styles.details}>
-                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.name} numberOfLines={1}>
+                  {item.name}
+                </Text>
+
                 <Text style={styles.village}>{item.village}</Text>
+
                 {item.mobile ? (
                   <Text style={styles.mobile}>{item.mobile}</Text>
                 ) : null}
               </View>
 
-              <ChevronRight size={22} color={colors.textSecondary} />
+              <ChevronRight size={20} color={colors.textSecondary} />
             </Pressable>
           )}
         />
       )}
 
       <Pressable
-        style={styles.addButton}
         accessibilityRole="button"
+        accessibilityLabel="नया किसान जोड़ें"
         onPress={onAdd}
+        style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
       >
-        <Plus size={25} color={colors.white} />
+        <Plus size={23} color={colors.onPrimary} />
         <Text style={styles.addText}>नया किसान जोड़ें</Text>
       </Pressable>
     </View>
@@ -130,61 +161,99 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   header: {
-    marginBottom: spacing.lg,
-  },
-  homeButton: {
     flexDirection: "row",
     alignItems: "center",
+    minHeight: 64,
     gap: spacing.sm,
-    minHeight: 52,
-    alignSelf: "flex-start",
-  },
-  homeText: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.primary,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: colors.text,
     marginBottom: spacing.lg,
+  },
+  backButton: {
+    width: 48,
+    height: 48,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontFamily: fonts.semibold,
+    fontSize: 21,
+    lineHeight: 32,
+    color: colors.text,
+  },
+  summary: {
+    backgroundColor: colors.primaryContainer,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  summaryIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryLabel: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 23,
+    color: colors.onPrimaryContainer,
+  },
+  summaryValue: {
+    fontFamily: fonts.bold,
+    fontSize: 26,
+    lineHeight: 38,
+    color: colors.onPrimaryContainer,
   },
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 58,
-    backgroundColor: colors.surface,
+    minHeight: 56,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    gap: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
     marginBottom: spacing.lg,
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontFamily: fonts.regular,
+    fontSize: 14,
     color: colors.text,
+  },
+  list: {
+    paddingBottom: spacing.xl,
+    flexGrow: 1,
+  },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
   },
   card: {
     flexDirection: "row",
     alignItems: "center",
     minHeight: 86,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
     padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
     marginBottom: spacing.sm,
     gap: spacing.md,
   },
   avatar: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryLight,
+    borderRadius: radius.full,
+    backgroundColor: colors.primaryContainer,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -192,39 +261,55 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontFamily: fonts.semibold,
+    fontSize: 15,
+    lineHeight: 26,
     color: colors.text,
   },
   village: {
-    fontSize: 15,
+    fontFamily: fonts.regular,
+    fontSize: 13,
+    lineHeight: 23,
     color: colors.textSecondary,
-    marginTop: 3,
   },
   mobile: {
-    fontSize: 13,
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    lineHeight: 21,
     color: colors.textSecondary,
-    marginTop: 3,
   },
   empty: {
-    textAlign: "center",
-    marginTop: spacing.xxl,
+    alignItems: "center",
+    paddingTop: spacing.xxxl,
+    gap: spacing.sm,
+  },
+  emptyTitle: {
+    fontFamily: fonts.semibold,
+    fontSize: 17,
+    color: colors.text,
+  },
+  emptyDescription: {
+    fontFamily: fonts.regular,
+    fontSize: 13,
     color: colors.textSecondary,
-    fontSize: 16,
+    textAlign: "center",
   },
   addButton: {
-    minHeight: 60,
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
+    minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
     gap: spacing.sm,
-    marginTop: spacing.md,
+    marginVertical: spacing.lg,
   },
   addText: {
-    color: colors.white,
-    fontSize: 19,
-    fontWeight: "700",
+    fontFamily: fonts.semibold,
+    fontSize: 16,
+    color: colors.onPrimary,
+  },
+  pressed: {
+    opacity: 0.85,
   },
 });

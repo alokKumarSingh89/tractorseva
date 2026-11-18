@@ -1,26 +1,42 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+
+import {
+  NotoSansDevanagari_400Regular,
+  NotoSansDevanagari_500Medium,
+  NotoSansDevanagari_600SemiBold,
+  NotoSansDevanagari_700Bold,
+} from "@expo-google-fonts/noto-sans-devanagari";
 
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { initializeDatabase } from "./src/database/sqlite";
 import { colors } from "./src/theme/colors";
+import { fonts } from "./src/theme/fonts";
 
 export default function App() {
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState(false);
+  const [databaseReady, setDatabaseReady] = useState(false);
+  const [databaseError, setDatabaseError] = useState(false);
+
+  const [fontsLoaded, fontError] = useFonts({
+    NotoSansDevanagari_400Regular,
+    NotoSansDevanagari_500Medium,
+    NotoSansDevanagari_600SemiBold,
+    NotoSansDevanagari_700Bold,
+  });
 
   useEffect(() => {
     let mounted = true;
 
     initializeDatabase()
       .then(() => {
-        if (mounted) setReady(true);
+        if (mounted) setDatabaseReady(true);
       })
-      .catch((reason) => {
-        console.error("Database initialization failed", reason);
-        if (mounted) setError(true);
+      .catch((error) => {
+        console.error("Database initialization failed:", error);
+        if (mounted) setDatabaseError(true);
       });
 
     return () => {
@@ -28,12 +44,17 @@ export default function App() {
     };
   }, []);
 
+  const ready = databaseReady && (fontsLoaded || Boolean(fontError));
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={styles.container}
+        edges={["top", "bottom", "left", "right"]}
+      >
         <StatusBar style="dark" />
 
-        {error ? (
+        {databaseError ? (
           <View style={styles.center}>
             <Text style={styles.message}>
               डेटा खोलने में समस्या हुई। ऐप दोबारा खोलें।
@@ -59,14 +80,16 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   message: {
-    marginTop: 16,
-    color: colors.text,
-    fontSize: 17,
+    fontFamily: fonts.regular,
+    fontSize: 16,
+    lineHeight: 28,
+    color: colors.textSecondary,
     textAlign: "center",
+    marginTop: 16,
   },
 });

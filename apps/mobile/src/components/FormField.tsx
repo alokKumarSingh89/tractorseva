@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors } from "../theme/colors";
+import { fonts } from "../theme/fonts";
 import { radius, spacing } from "../theme/spacing";
 
 type Props = {
@@ -32,13 +33,13 @@ export function FormField({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.textSecondary}
+        placeholderTextColor={colors.textMuted}
         keyboardType={keyboardType}
         multiline={multiline}
         style={[
           styles.input,
           multiline && styles.multiline,
-          error ? styles.errorBorder : null,
+          error && styles.errorBorder,
         ]}
       />
 
@@ -49,26 +50,28 @@ export function FormField({
 
 const styles = StyleSheet.create({
   container: {
+    marginBottom: spacing.xl,
     gap: spacing.sm,
-    marginBottom: spacing.lg,
   },
   label: {
-    fontSize: 17,
-    fontWeight: "700",
+    fontFamily: fonts.medium,
+    fontSize: 14,
+    lineHeight: 24,
     color: colors.text,
   },
   input: {
-    minHeight: 58,
+    minHeight: 56,
     backgroundColor: colors.surface,
-    borderColor: colors.border,
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
-    fontSize: 17,
+    fontFamily: fonts.regular,
+    fontSize: 15,
     color: colors.text,
   },
   multiline: {
-    minHeight: 100,
+    minHeight: 104,
     paddingTop: spacing.md,
     textAlignVertical: "top",
   },
@@ -76,7 +79,9 @@ const styles = StyleSheet.create({
     borderColor: colors.danger,
   },
   error: {
-    fontSize: 13,
+    fontFamily: fonts.regular,
+    fontSize: 12,
+    lineHeight: 20,
     color: colors.danger,
   },
 });
